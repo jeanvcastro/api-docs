@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RESTful API docs generator</title>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
+
+    <!--markdown-it.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/10.0.0/markdown-it.min.js"
+            integrity="sha256-YASERpEeN8gRNr/Fy4Km34WGFqIq1h6HkJMAQnVHlhk=" crossorigin="anonymous"></script>
+
+    <!--highlight.js -->
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/darcula.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+
+    <style>
+        a.button {
+            width: 36px;
+            height: 36px;
+            line-height: 3;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+<div class="container my-5">
+    <h4>RESTful API docs generator</h4>
+    <hr>
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <div class="form-group">
+                <label for="method">Método:</label>
+                <select id="method" class="form-control">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="path">Path:</label>
+                <input type="text" id="path" class="form-control" placeholder="Enter resource path..." value="/project">
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" id="description" class="form-control"
+                       placeholder="Enter the description of the resource...">
+            </div>
+            <label>Headers:</label>
+            <form id="headers" class="mb-3">
+            </form>
+            <div id="headers-actions">
+                <button class="btn btn-primary" id="add-header">Adicionar</button>
+                <button class="btn btn-danger" id="clear-headers">Limpar</button>
+            </div>
+            <br>
+            <label>Body:</label>
+            <form id="body" class="mb-3">
+            </form>
+            <div id="body-actions">
+                <button class="btn btn-primary" id="add-body">Adicionar</button>
+                <button class="btn btn-warning" id="add-file">Arquivo</button>
+                <button class="btn btn-danger" id="clear-body">Limpar</button>
+            </div>
+            <br>
+            <div class="text-right">
+                <button class="btn btn-primary" id="btn-render">
+                    Visualizar
+                </button>
+                <button class="btn btn-success" id="btn-test">
+                    Visualizar com resposta
+                </button>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="text-right">
+                <button class="btn bnt-light" id="copy-html">Copy HTML</button>
+                <button class="btn bnt-light" id="copy-md">Copy Markdown</button>
+            </div>
+            <div id="result">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(() => {
+
+        let _markdown = "";
+
+        let md = window.markdownit({
+            highlight: function (str, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return '<pre class="hljs"><code>' +
+                            hljs.highlight(lang, str, true).value +
+                            '</code></pre>';
+                    } catch (__) {
+                    }
+                }
+                return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+            }
+        });
+
+        //Headers
+        $('#add-header').on('click', function () {
+            let data = `<div class="form-row mb-2">
+                            <div class="col">
+                                <input type="text" class="form-control key" placeholder="Header..." value="">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control value" placeholder="Value..." value="">
+                            </div>
+                            <a class="button btn-remove-header">
+                                <i class="material-icons">delete</i>
+                            </a>
+                        </div>`;
+
+            $('#headers').append(data);
+        });
+
+        $(document).on('click', '.btn-remove-header', function () {
+            $(this).parent().remove();
+        });
+
+        $('#clear-headers').on('click', function () {
+            $('#headers').html('');
+        });
+        //End-Headers
+
+        //Body
+        $('#add-body').on('click', function () {
+
+            let timestamp = new Date().getTime();
+
+            let data = `<div class="form-row mb-2">
+                            <div class="col">
+                                <input type="text" class="form-control key" placeholder="Key..." value="">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control value" placeholder="Value..." value="">
+                            </div>
+                            <div class="form-group form-check mb-0 pt-2">
+                                <input type="checkbox" class="form-check-input optional" id="${timestamp}">
+                                <label class="form-check-label" for="${timestamp}">optional</label>
+                             </div>
+                            <a class="button btn-remove-header">
+                                <i class="material-icons">delete</i>
+                            </a>
+                        </div>`;
+
+            $('#body').append(data);
+        });
+
+        $('#add-file').on('click', function () {
+
+            let timestamp = new Date().getTime();
+
+            let data = `<div class="form-row mb-2">
+                            <div class="col">
+                                <input type="text" class="form-control key" placeholder="Name..." value="">
+                            </div>
+                            <div class="col">
+                                <input type="file" multiple class="form-control value" placeholder="Value..." value="">
+                            </div>
+                            <div class="form-group form-check mb-0 pt-2">
+                                <input type="checkbox" class="form-check-input optional" id="${timestamp}">
+                                <label class="form-check-label" for="${timestamp}">optional</label>
+                             </div>
+                            <a class="button btn-remove-header">
+                                <i class="material-icons">delete</i>
+                            </a>
+                        </div>`;
+
+            $('#body').append(data);
+        });
+
+        $(document).on('click', '.btn-remove-body', function () {
+            $(this).parent().remove();
+        });
+
+        $('#clear-body').on('click', function () {
+            $('#body').html('');
+        });
+        //End-Body
+
+        $('#btn-render').on('click', function () {
+            let data = data2Markdown();
+            _markdown = data;
+            let result = md.render(data);
+            $('#result').html(result);
+        });
+
+        $('#btn-test').on('click', function () {
+            let data = getData('/api');
+            let fd = new FormData();
+            let params = {...data.required, ...data.optional};
+
+            Object.keys(params).map(function (key) {
+                let value = params[key];
+                if (value instanceof FileList) {
+                    Array.from(value).map(function (file) {
+                        fd.append(key, file)
+                    });
+                } else {
+                    fd.set(key, value);
+                }
+            });
+
+            if (data.method === "GET") {
+                let queryString = new URLSearchParams(fd).toString();
+                data.url += queryString ? "?" + queryString : '';
+                fd = {};
+            }
+
+            $.ajax({
+                method: data.method,
+                url: data.url,
+                headers: data.headers,
+                processData: false,
+                contentType: false,
+                data: fd,
+                complete: response => {
+                    let data = data2Markdown();
+                    data += "\n- **Response:** " + response.status + " " + response.statusText + "\n   ```json";
+                    let json = JSON.stringify(response.responseJSON, null, 2);
+                    json.split("\n").forEach(function (value) {
+                        data += "\n    " + value;
+                    });
+                    data += "\n    ```";
+                    _markdown = data;
+                    let result = md.render(data);
+                    $('#result').html(result);
+                }
+            })
+        });
+
+        $('#copy-html').on('click', function () {
+            let value = $('#result').html();
+            copyToClipboard(value);
+        });
+
+        $('#copy-md').on('click', function () {
+            copyToClipboard(_markdown);
+        });
+
+        function getData(baseURL = '') {
+            let data = {
+                method: $('#method').val(),
+                url: baseURL + $('#path').val(),
+                headers: {},
+                required: {},
+                optional: {},
+                description: $('#description').val(),
+            };
+
+            $('#headers .form-row').each(function () {
+                let row = $(this);
+                let key = row.find('.key').val();
+                data.headers[key] = row.find('.value').val();
+            });
+
+            $('#body .form-row').each(function () {
+                let row = $(this);
+                let key = row.find('.key').val();
+                let input = row.find('.value');
+                let field = row.find('.optional').prop('checked') ? 'optional' : 'required';
+
+                if (input.attr('type') === 'file') {
+                    let files = input.prop('files');
+                    if (files.length > 1 && !key.includes('[]')) {
+                        key += "[]";
+                    }
+                    data[field][key] = files;
+                } else {
+                    data[field][key] = input.val();
+                }
+            });
+
+            return data;
+        }
+
+        function data2Markdown() {
+
+            let data = getData();
+
+            let md = "- **Path:**";
+            md += "\\\n`" + data.method + "` " + data.url;
+
+            if (data.description.length) {
+                md += "\n- **Description:**";
+                md += "\\\n" + data.description;
+            }
+
+            if (isNotEmpty(data.headers)) {
+                md += "\n- **Headers:**";
+                Object.keys(data.headers).forEach(function (key) {
+                    md += "\\\n`" + key + "=" + data.headers[key] + "`";
+                });
+            }
+
+            if (isNotEmpty(data.required) || isNotEmpty(data.optional)) {
+                md += "\n- **Params:**";
+                if (isNotEmpty(data.required)) {
+                    md += "\\\n**Required:**";
+                    Object.keys(data.required).forEach(function (key) {
+                        let item = data.required[key];
+                        if (item instanceof FileList) {
+                            md += "\\\n`" + key + "=[binary]`";
+                        } else {
+                            md += "\\\n`" + key + "=" + typeof item + "`";
+                        }
+                    });
+                }
+
+                if (isNotEmpty(data.optional)) {
+                    md += "\\\n**Optional:**";
+                    Object.keys(data.optional).forEach(function (key) {
+                        let item = data.optional[key];
+                        if (item instanceof FileList) {
+                            md += "\\\n`" + key + "=[binary]`";
+                        } else {
+                            md += "\\\n`" + key + "=" + typeof item + "`";
+                        }
+                    });
+                }
+            }
+
+            return md;
+        }
+
+        function copyToClipboard(text) {
+            let textarea = document.createElement("textarea");
+            textarea.textContent = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+            } catch (ex) {
+                console.warn("Copy to clipboard failed.", ex);
+                return false;
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function isNotEmpty(obj) {
+            return Object.keys(obj ? obj : {}).length > 0;
+        }
+    });
+</script>
+
+</body>
+</html>
