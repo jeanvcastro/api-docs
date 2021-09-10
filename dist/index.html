@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESTful API docs generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container my-5">
+        <h4>RESTful API docs generator</h4>
+        <hr>
+        <div class="row justify-content-center">
+            <div class="col-6">
+                <div class="mb-3">
+                    <label for="method">Método:</label>
+                    <select id="method" class="form-control">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="path">Path:</label>
+                    <input type="text" id="path" class="form-control" placeholder="Enter resource path..."
+                        value="/project">
+                </div>
+                <div class="mb-3">
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" class="form-control"
+                        placeholder="Enter the description of the resource...">
+                </div>
+                <label>Headers:</label>
+                <form id="headers" class="mb-3">
+                </form>
+                <div id="headers-actions">
+                    <button class="btn btn-primary" id="add-header">Adicionar</button>
+                    <button class="btn btn-danger" id="clear-headers">Limpar</button>
+                </div>
+                <br>
+                <label>Body:</label>
+                <form id="body" class="mb-3">
+                </form>
+                <div id="body-actions">
+                    <button class="btn btn-primary" id="add-body">Adicionar</button>
+                    <button class="btn btn-warning" id="add-file">Arquivo</button>
+                    <button class="btn btn-danger" id="clear-body">Limpar</button>
+                </div>
+                <div class="d-flex justify-content-end mt-5">
+                    <button class="btn btn-primary me-2" id="btn-render">
+                        Visualizar
+                    </button>
+                    <button class="btn btn-success" id="btn-test">
+                        Visualizar com resposta
+                    </button>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="d-flex justify-content-end">
+                    <button class="btn bnt-light" id="copy-html">Copy HTML</button>
+                    <button class="btn bnt-light" id="copy-md">Copy Markdown</button>
+                </div>
+                <div id="result">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

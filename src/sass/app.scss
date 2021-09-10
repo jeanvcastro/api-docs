@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Icons');
+
+@import '~bootstrap/scss/bootstrap';
+
+@import 'highlight.js/scss/dark';
+
+.btn-remove {
+  width: 36px;
+  height: 36px;
+  line-height: 1.7;
+  text-align: center;
+  cursor: pointer;
+  color: #888;
+}
